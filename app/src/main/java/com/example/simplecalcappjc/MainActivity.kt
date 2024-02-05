@@ -41,7 +41,7 @@ import androidx.compose.ui.unit.dp
 import com.example.simplecalcappjc.ui.theme.SimpleCalcAppJCTheme
 import splitties.toast.longToast
 
-class MainActivity : ComponentActivity() {
+class MainActivity: ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -57,20 +57,25 @@ private val TAG = "MainActivity"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SimpleButton() {
+    var calcMode by remember { mutableStateOf("plus") }
+    var result by remember { mutableStateOf("") }
+
+    val radioOptions = listOf("plus", "minus", "mal", "durch")
+    val (selectedOption, onOptionSelected) = remember { mutableStateOf(radioOptions[0]) }
+
     var output by remember { mutableStateOf("") }
     var input1 by remember { mutableStateOf("") }
     var input2 by remember { mutableStateOf("") }
 
-
     Scaffold(
     ) { innerpadding ->
-        Column (
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerpadding),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             Row(
                 modifier = Modifier.padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
@@ -101,10 +106,18 @@ fun SimpleButton() {
             Button(
                 modifier = Modifier.padding(vertical = 20.dp),
                 onClick = {
-                    if(input1.isEmpty() || input2.isEmpty()){
-                        longToast("Bitte geben Sie zwei Operanden an")
+                    if (input1.isEmpty() || input2.isEmpty()) {
+                        longToast("BittegebenSiezweiOperandenan")
                     } else {
-                        output = (input1.toInt() + input2.toInt()).toString()
+                        val x = input1.toInt()
+                        val y = input2.toInt()
+                        when (calcMode) {
+                            "plus" -> result = (x + y).toString()
+                            "minus" -> result = (x - y).toString()
+                            "mal" -> result = (x * y).toString()
+                            "durch" -> result = (x / y).toString()
+                        }
+                        output = result
                     }
                 },
                 border = BorderStroke(2.dp, Color.Blue),
@@ -114,9 +127,14 @@ fun SimpleButton() {
                     contentColor = Color.Blue
                 )
             ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = null
+                Text(
+                    text = when (calcMode) {
+                        "plus" -> "+"
+                        "minus" -> "-"
+                        "mal" -> "x"
+                        "durch" -> "/"
+                        else -> "+"
+                    }
                 )
             }
             Text(
@@ -126,12 +144,42 @@ fun SimpleButton() {
                 modifier = Modifier.padding(vertical = 20.dp),
                 text = output
             )
+            radioOptions.forEach { text ->
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .height(56.dp)
+                        .selectable(
+                            selected = (text == selectedOption),
+                            onClick = {
+                                onOptionSelected(text)
+                                calcMode = text
+                            },
+                            role = Role.RadioButton
+                        )
+                        .padding(horizontal = 16.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = (text == selectedOption),
+                        onClick = {
+                            onOptionSelected(text)
+                            calcMode = text
+                        }
+                    )
+                    Text(
+                        text = text,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier.padding(start = 16.dp)
+                    )
+                }
+            }
         }
     }
 }
 
 
-@Preview(showBackground = true)
+@Preview(showBackground=true)
 @Composable
 fun SimpleButtonPreview() {
     SimpleCalcAppJCTheme {
